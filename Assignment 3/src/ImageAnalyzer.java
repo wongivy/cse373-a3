@@ -84,10 +84,10 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
         double euclideanDistance(Color c2) {
             // TODO
             // Replace this to return the distance between this color and c2.
-        	double diffR = (r - c2.r) ^ 2;
-        	double diffG = (g - c2.g) ^ 2;
-        	double diffB = (b - c2.b) ^ 2;
-            return Math.sqrt(diffR + diffG + diffB);
+        	int diffR = (r - c2.r) ^ 2;
+        	int diffG = (g - c2.g) ^ 2;
+        	int diffB = (b - c2.b) ^ 2;
+            return Math.sqrt((double) (diffR + diffG + diffB));
         }
     }
 
@@ -390,33 +390,48 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
 
     void handlePaletteMenu(JMenuItem mi){
         System.out.println("A palette menu item was selected.");  
-    	
         if (mi==createPItem2) { 
         	buildPalette(2);
+        	enableEncodeItems();
         } // TODO Call your method here.
         else if (mi==createPItem4) { 
         	buildPalette(4);
+        	enableEncodeItems();
         } // TODO Call your method here.
         else if (mi==createPItem16) { 
         	buildPalette(16);
+        	enableEncodeItems();
         } // TODO Call your method here.
         else if (mi==createPItem256) { 
         	buildPalette(256);
+        	enableEncodeItems();
         } // TODO Call your method here.
-        else if (mi==selectBItem4) { setBlockSize(4); }
-        else if (mi==selectBItem8) { setBlockSize(8); }
-        else if (mi==selectBItem16) { setBlockSize(16); }
+        else if (mi==selectBItem4) { 
+        	setBlockSize(4); 
+        	disableMenuItems();
+        } else if (mi==selectBItem8) { 
+        	setBlockSize(8); 
+        	disableMenuItems(); 
+        } else if (mi==selectBItem16) { 
+        	setBlockSize(16); 
+        	disableMenuItems(); 
+        }
     }
 
     void handleEncodeMenu(JMenuItem mi){
         System.out.println("An encode menu item was selected.");
         if (mi==encodeSSItem){
-        	
+        	encodeSlowAndSimple();
+        	disableEncodeItems();
         } // TODO Call your method here.
         else if (mi==encodeFItem) { 
-        	
+        	encodeFast();
+        	disableEncodeItems();
         } // TODO Call your method here.
-        else if (mi==decodeItem) { } // TODO Call your method here.
+        else if (mi==decodeItem) { 
+        	decode();
+        	enableEncodeItems();
+        } // TODO Call your method here.
     }
 
     void handleHashingMenu(JMenuItem mi){
@@ -484,12 +499,58 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
         System.out.println("Hash function choice is now "+hashFunctionChoice);
         // TODO
         // Add code to update the menu item states appropriately.
+        switch(hc) {
+	       case 1:
+	    	   hashFunctionItem1.setSelected(true);
+	    	   hashFunctionItem2.setSelected(false);
+	    	   hashFunctionItem3.setSelected(false);
+	    	   break;
+	        		
+	       case 2:
+	    	   hashFunctionItem2.setSelected(true);
+	    	   hashFunctionItem1.setSelected(false);
+	    	   hashFunctionItem3.setSelected(false);
+	    	   break;
+	        		
+	       case 3: 
+	    	   hashFunctionItem3.setSelected(true);
+	    	   hashFunctionItem1.setSelected(false);
+	    	   hashFunctionItem2.setSelected(false);
+	    	   break;
+	        
+	       default:
+	    	   break;
+        }
+        
     }
 
     public void setBlockSize(int bs) {
         blockSize = bs;
         // TODO
         // Add code to update the menu item states appropriately.
+
+        switch(bs) {
+	       case 4:
+	    	   selectBItem4.setSelected(true);
+	    	   selectBItem8.setSelected(false);
+	    	   selectBItem16.setSelected(false);
+	    	   break;
+	        		
+	       case 8:
+	    	   selectBItem8.setSelected(true);
+	    	   selectBItem4.setSelected(false);
+	    	   selectBItem16.setSelected(false);
+	    	   break;
+	        		
+	       case 16: 
+	    	   selectBItem16.setSelected(true);
+	    	   selectBItem4.setSelected(false);
+	    	   selectBItem8.setSelected(false);
+	    	   break;
+	        
+	       default:
+	    	   break;
+        }
     }
 
     public void buildPalette(int paletteSize) {
@@ -514,7 +575,6 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
     	for(int i = 0; i < paletteSize; i++) {
     		Block currentBlock = sortedBlocks.get(i);
     		palette[i] = new Color(currentBlock.getRed(), currentBlock.getGreen(), currentBlock.getBlue());
-    		System.out.println(i + " " + palette[i]);
     	}
     }
 
@@ -535,11 +595,29 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
     public void encodeSlowAndSimple() {
         // TODO
         // Add your code here to determine the encoded pixel values and store them in the array encodedPixels (first method).
+    	Color[][] imageRGB = storeCurrPixels(biWorking);
+    	encodedPixels = new int[h][w];
+    	for (int row = 0; row < h; row ++) {
+    		for (int col = 0; col < w; col++) {
+    			Color currentPixelColor = imageRGB[row][col];
+    			int closestColorIndex = 0;
+    			double closestColorDistance = currentPixelColor.euclideanDistance(palette[0]);
+    			for (int index = 1; index < palette.length; index++) {
+    				double calculateDistance = currentPixelColor.euclideanDistance(palette[index]);
+    				if(closestColorDistance > calculateDistance) {
+    					closestColorIndex = index;
+    					closestColorDistance = calculateDistance;
+    				}
+    			}
+    			encodedPixels[row][col] = closestColorIndex;
+    		}
+    	}
     }
 
     public void encodeFast() {  
         // TODO
         // Add your code here to determine the encoded pixel values and store them in the array encodedPixels (second method, using sortedBlocks and/or javaHashMap again).
+    	
     }
 
     public void decode() {
@@ -610,9 +688,32 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
     	String blockString = "" + b.getRed() + b.getGreen() + b.getBlue();
         return blockString.hashCode();
     }
+    
+	private void enableEncodeItems() {
+    	encodeSSItem.setEnabled(true);
+    	encodeFItem.setEnabled(true);
+    	decodeItem.setEnabled(false);
+	}
+	
+	private void disableEncodeItems() {
+    	encodeSSItem.setEnabled(false);
+    	encodeFItem.setEnabled(false);
+    	decodeItem.setEnabled(true);
+	}
+	
+	private void disableMenuItems() {
+    	encodeSSItem.setEnabled(false);
+    	encodeFItem.setEnabled(false);
+    	decodeItem.setEnabled(false);
+	}
 
     /* This main method can be used to run the application. */
     public static void main(String s[]) {
         appInstance = new ImageAnalyzer();
     }
 }
+
+	
+	
+	
+	
