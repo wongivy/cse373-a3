@@ -45,7 +45,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class ImageAnalyzer extends JFrame implements ActionListener {
     public static ImageAnalyzer appInstance; // Used in main().
 
-    String startingImage = "q3Image.png"; //"UW-Campus-1961.jpg";
+    String startingImage = "q3Image.png" ;//"UW-Campus-1961.jpg";
     BufferedImage biTemp, biWorking, biFiltered; // These hold arrays of pixels.
     Graphics gOrig, gWorking; // Used to access the drawImage method.
     int w; // width of the current image.
@@ -586,8 +586,6 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
     		palette[i] = new Color(currentBlock.getRed() * blockSize + blockSize / 2, 
     				currentBlock.getGreen() * blockSize + blockSize / 2, 
     				currentBlock.getBlue() * blockSize + blockSize / 2);
-    		
-    		System.out.println("palette " + i + ": " + palette[i].r + " " + palette[i].g + " " + palette[i].b);
     	}
     	long endTime = System.nanoTime();
     	long paletteTime = (endTime - startTime) / 1000000;
@@ -618,7 +616,6 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
     	Color[][] imageRGB = storeCurrPixels(biWorking);
     	encodedPixels = new int[h][w];
     	for (int row = 0; row < h; row ++) {
-    		System.out.print("for each row: ");
     		for (int col = 0; col < w; col++) {
     			Color currentPixelColor = imageRGB[row][col];
     			int closestColorIndex = 0;
@@ -631,9 +628,7 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
     				}
     			}
     			encodedPixels[row][col] = closestColorIndex;
-    			System.out.print(closestColorIndex);
     		}
-    		System.out.println();
     	}
     	long endTime = System.nanoTime();
     	long duration = (endTime - startTime) / 100000;
@@ -759,6 +754,10 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
 		System.out.println("Number of Pixels in the Image: " + w * h);
 		System.out.println("Number of Distinct Color Bins: " + javaHashMap.size());
 		System.out.println("Number of Key-Value Pairs in the Hashtable: " + javaHashMap.size());
+		int bitCountForPalette =  Integer.bitCount(palette.length);
+		int bitOfCompressedImage = bitCountForPalette * w * h + 24 * palette.length;
+		int bitOfOriginalImage = 24 * w * h;
+		System.out.println("Estimated Compression Ratio: " + ((double) bitOfOriginalImage) / bitOfCompressedImage);
 	}
     /* This main method can be used to run the application. */
     public static void main(String s[]) {
