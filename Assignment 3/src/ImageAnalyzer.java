@@ -46,8 +46,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class ImageAnalyzer extends JFrame implements ActionListener {
     public static ImageAnalyzer appInstance; // Used in main().
 
-    String startingImage = "UW-Campus-1961.jpg";
-    //String startingImage = "q3Image.png"; 
+    //String startingImage = "UW-Campus-1961.jpg";
+    String startingImage = "q3Image.png"; 
     BufferedImage biTemp, biWorking, biFiltered; // These hold arrays of pixels.
     Graphics gOrig, gWorking; // Used to access the drawImage method.
     int w; // width of the current image.
@@ -90,7 +90,7 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
         	int diffR = r - c2.r;
         	int diffG = g - c2.g;
         	int diffB = b - c2.b;
-            return Math.sqrt((double) Math.pow(diffR, diffR) + Math.pow(diffG, diffG) + Math.pow(diffB, diffB));//(diffR * diffR + diffG * diffG + diffB * diffB));
+            return Math.sqrt((double) (diffR * diffR + diffG * diffG + diffB * diffB));
         }
     }
 
@@ -588,7 +588,6 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
     		palette[i] = new Color(currentBlock.getRed() * blockSize + blockSize / 2, 
     				currentBlock.getGreen() * blockSize + blockSize / 2, 
     				currentBlock.getBlue() * blockSize + blockSize / 2);
-    		System.out.println(palette[i].r + " " + palette[i].g + " " + palette[i].b);
     	}
     	long endTime = System.nanoTime();
     	long paletteTime = (endTime - startTime) / 1000000;
@@ -634,7 +633,7 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
     		}
     	}
     	long endTime = System.nanoTime();
-    	long duration = (endTime - startTime) / 100000;
+    	long duration = (endTime - startTime) / 1000000;
     	totalTimeElapsed += duration;
     	System.out.println("Time taken to encode slow and simple (in ms): " + duration);
     	printStats();
@@ -658,7 +657,7 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
 					closestColorDistance = calculateDistance;
 				}
 			}
-			javaHashMap.put(colorBlock, closestColorIndex);
+			javaHashMap.put(colorBlock, Integer.valueOf(closestColorIndex));
     	}
     	
     	Color[][] imageRGB = storeCurrPixels(biWorking);
@@ -666,12 +665,13 @@ public class ImageAnalyzer extends JFrame implements ActionListener {
     	for (int row = 0; row < h; row ++) {
     		for (int col = 0; col < w; col++) {
     			Color currentColor = imageRGB[row][col];
-    			Block currentPixelBlock = new Block(currentColor.r / blockSize, currentColor.g / blockSize, currentColor.b / blockSize);
+    			Block currentPixelBlock = new Block(currentColor.r / blockSize, 
+    					currentColor.g / blockSize, currentColor.b / blockSize);
     			encodedPixels[row][col] = javaHashMap.get(currentPixelBlock);
     		}
     	}
     	long endTime = System.nanoTime();
-    	long duration = (endTime - startTime) / 100000;
+    	long duration = (endTime - startTime) / 1000000;
     	totalTimeElapsed += duration;
     	System.out.println("Time taken to encode fast (in ms): " + duration);
     	printStats();
